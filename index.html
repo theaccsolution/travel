@@ -289,7 +289,7 @@ button.bar{cursor:pointer}
  .setgrid{display:grid;grid-template-columns:1.2fr 1fr;gap:14px;align-items:start}
 }
 @media (min-width:1100px){.day .dbody{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}}
-</style></head><body>
+body.guest details.money input,body.guest details.money select,body.guest details.money textarea,body.guest details.money button,body.guest #fx,body.guest #cap,body.guest #reset{pointer-events:none;opacity:.55}body.guest .addrow,body.guest .erow button,body.guest #reset{display:none!important}</style></head><body>
 <header class="top" id="top">
  <div class="top-in">
   <div class="brand"><span class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 19 6-9 3 4 3-6 6 11z"/></svg></span><div style="min-width:0"><b>ฮอกไกโด 2026</b><small>27 พ.ย. – 6 ธ.ค. · 2 คน · ขับรถเที่ยว</small></div></div>
@@ -343,7 +343,7 @@ button.bar{cursor:pointer}
     <h2>ตั้งค่า</h2>
     <label class="field"><span>อัตราแลกเปลี่ยน (บาท ต่อ 1 เยน)</span><input id="fx" type="number" step="0.001" inputmode="decimal"></label>
     <label class="field"><span>งบสูงสุด 2 คน (บาท)</span><input id="cap" type="number" step="1000" inputmode="decimal"></label>
-    <div class="field"><span>ซิงก์ข้ามเครื่อง</span><div class="syncrow"><span id="keybox" hidden><input id="key" type="password" placeholder="รหัสแก้ไข" autocomplete="current-password" style="width:120px"> <button id="keyok" type="button">ใช้รหัสนี้</button></span><button id="keyout" type="button" hidden>ออกจากระบบ</button> <span class="saved" id="saved"></span></div></div>
+    <div class="field"><span>ซิงก์ข้ามเครื่อง</span><div class="syncrow"><span id="keybox" hidden><input id="key" type="password" placeholder="รหัสแก้ไข / รหัสดู" autocomplete="current-password" style="width:120px"> <button id="keyok" type="button">ใช้รหัสนี้</button></span><button id="keyout" type="button" hidden>ออกจากระบบ</button> <span class="saved" id="saved"></span></div></div>
     <div class="btnrow"><button id="csv" class="btn" type="button">ส่งออก CSV</button><button id="reset" class="btn danger" type="button">ล้างค่าเริ่มต้น</button></div>
    </div>
    <div class="view">
@@ -502,24 +502,25 @@ const ICO={nav:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stro
 function routeText(k){const d=ROUTEINFO[k];return d?`ขับ ~${Math.round(d.km)} กม. · ~${Math.floor(d.min/60)} ชม. ${Math.round(d.min%60)} นาที`:""}
 function gmaps(r){const e=x=>encodeURIComponent(x.q);const w=r.slice(1,-1).map(e).join("%7C");return "https://www.google.com/maps/dir/?api=1&travelmode=driving&origin="+e(r[0])+"&destination="+e(r[r.length-1])+(w?"&waypoints="+w:"")}
 let EK="";try{EK=localStorage.getItem("hk-editkey")||""}catch(e){}
-let writing=Promise.resolve(),timer=null,lastJSON="",authed=false;
+let writing=Promise.resolve(),timer=null,lastJSON="",authed=false,GUEST=false;
 function status(t){document.getElementById("saved").textContent=t}
+function setGuest(on){GUEST=on;document.body.classList.toggle("guest",on)}
 function showKey(on){document.getElementById("keybox").hidden=!on;document.getElementById("keyout").hidden=on||!EK}
 async function pull(quiet){
   if(!EK){showKey(true);if(!quiet)status("ใส่รหัสเพื่อโหลดและบันทึกยอดจริงบนคลาวด์");return}
   try{const r=await fetch(API+"/api/ledger",{headers:{"x-edit-key":EK},cache:"no-store"});
-    if(r.status===401){authed=false;showKey(true);status("รหัสไม่ถูกต้อง");return}
-    if(!r.ok)throw 0;authed=true;showKey(false);
+    if(r.status===401){authed=false;setGuest(false);showKey(true);status("รหัสไม่ถูกต้อง");return}
+    if(!r.ok)throw 0;authed=true;showKey(false);setGuest(r.headers.get("x-role")==="view");
     const txt=await r.text();let data=JSON.parse(txt);
-    if(!data){if(!quiet)status("เชื่อมต่อคลาวด์แล้ว");save();return}
+    if(!data){if(!quiet)status("เชื่อมต่อคลาวด์แล้ว");if(!GUEST)save();return}
     const js=JSON.stringify(data);if(js===lastJSON&&quiet)return;lastJSON=js;
     data=migrate(data);const needPush=!!data.migrated;delete data.migrated;
     if(JSON.stringify(data)!==JSON.stringify(S)&&Array.isArray(data.items)){const a=document.activeElement;if(quiet&&a&&a.closest&&a.closest(".erow"))return;S=data;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}init()}
-    if(needPush)save();
-    status("ซิงก์กับคลาวด์แล้ว "+new Date().toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"}))
+    if(needPush&&!GUEST)save();
+    status((GUEST?"👀 โหมดดูอย่างเดียว · ":"")+"ซิงก์กับคลาวด์แล้ว "+new Date().toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"}))
   }catch(e){if(!quiet)status("ออฟไลน์: ข้อมูลเก็บในเครื่องนี้ไว้ก่อน")}
 }
-function push(){if(!EK||!authed)return;clearTimeout(timer);timer=setTimeout(()=>{const js=JSON.stringify(S);if(js===lastJSON)return;
+function push(){if(!EK||!authed||GUEST)return;clearTimeout(timer);timer=setTimeout(()=>{const js=JSON.stringify(S);if(js===lastJSON)return;
   writing=writing.then(()=>fetch(API+"/api/ledger",{method:"PUT",headers:{"x-edit-key":EK,"content-type":"application/json"},body:js})).then(r=>{if(r.status===401){authed=false;showKey(true);status("รหัสไม่ถูกต้อง ยังไม่ได้บันทึกบนคลาวด์");return}if(!r.ok)throw 0;lastJSON=js;status("บันทึกบนคลาวด์แล้ว "+new Date().toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"}))}).catch(()=>status("บันทึกบนคลาวด์ไม่สำเร็จ ข้อมูลยังอยู่ในเครื่องนี้"))},800)}
 function save(){push();try{localStorage.setItem(KEY,JSON.stringify(S));status("บันทึกในเครื่องแล้ว "+hhmm())}catch(e){status("เบราว์เซอร์ไม่ให้บันทึก กดส่งออก CSV เก็บไว้")}}
 function status(t){const a=document.getElementById("saved");if(a)a.textContent=t;let need=/ใส่รหัส|รหัสไม่ถูกต้อง/.test(t);try{if(typeof authed!=="undefined")need=!authed}catch(e){}
@@ -762,7 +763,8 @@ async function route(k){const r=ROUTES[k];const ck="hk-route-"+k+"-"+r.map(p=>p.
 renderChips();init();renderRoutes();setH();
 document.getElementById("keyok").addEventListener("click",()=>{EK=document.getElementById("key").value.trim();document.getElementById("key").value="";try{localStorage.setItem("hk-editkey",EK)}catch(e){}pull(false)});
 document.getElementById("key").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("keyok").click()});
-document.getElementById("keyout").addEventListener("click",()=>{EK="";authed=false;try{localStorage.removeItem("hk-editkey")}catch(e){}showKey(true);status("ออกจากระบบแล้ว")});
+document.getElementById("keyout").addEventListener("click",()=>{EK="";authed=false;setGuest(false);try{localStorage.removeItem("hk-editkey")}catch(e){}showKey(true);status("ออกจากระบบแล้ว")});
+["beforeinput","change","click","keydown"].forEach(ev=>document.addEventListener(ev,e=>{if(!GUEST)return;const t=e.target;if(!t||!t.closest)return;if(t.closest("details.money summary"))return;if(t.closest("details.money input,details.money select,details.money textarea,details.money button,#fx,#cap,#reset")){if(ev==="keydown"&&/^(Tab|Shift)$/.test(e.key))return;e.preventDefault();e.stopPropagation()}},true));
 pull(false);
 setInterval(()=>{if(document.visibilityState==="visible")pull(true)},20000);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")pull(true)});
