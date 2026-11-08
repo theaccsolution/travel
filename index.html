@@ -196,13 +196,16 @@ details.money[open]>summary::after{transform:rotate(-135deg);margin-bottom:-4px}
 .er-top{display:flex;gap:6px;align-items:center}
 .thm{flex:none;width:40px;height:40px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font-size:19px;cursor:pointer;margin-left:auto;margin-right:8px;display:grid;place-items:center;padding:0}
 .cardrow{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px;align-items:center}.cardrow button{border:0;background:transparent;color:var(--muted);font:inherit;cursor:pointer}
+.paygrp{border-top:1px solid var(--line)}.paygrp summary{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:11px 2px;cursor:pointer;list-style:none}.paygrp summary::-webkit-details-marker{display:none}
+.paygrp .pn{display:grid;gap:2px;font-weight:600;min-width:0}.paygrp .pn small{font-weight:400;color:var(--muted);font-size:12.5px}.paygrp .pv{display:grid;justify-items:end;font-weight:700;font-variant-numeric:tabular-nums}.paygrp .pv small{font-weight:400;color:var(--muted);font-size:12px}
+.paylist{padding:0 0 8px}.paylist .brow>span:last-child{text-align:right;font-size:12px}
 .fab{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:calc(var(--tab-h,64px) + env(safe-area-inset-bottom) + 16px);z-index:40;width:58px;height:58px;border-radius:50%;border:0;background:var(--navy);color:var(--onnavy);font-size:26px;box-shadow:0 6px 18px rgba(0,0,0,.28);cursor:pointer;display:grid;place-items:center}
 @media (min-width:768px){.fab{bottom:24px;right:24px}}
 .fabm{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:calc(var(--tab-h,64px) + env(safe-area-inset-bottom) + 84px);z-index:41;display:grid;gap:8px;justify-items:end}
 @media (min-width:768px){.fabm{bottom:92px;right:24px}}
 .fabm button{border:0;border-radius:99px;padding:11px 16px;background:var(--surface);color:var(--ink);font:inherit;font-size:15px;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,.22);cursor:pointer;white-space:nowrap}
 @media print{.fab,.fabm{display:none!important}}body.pmode .fab,body.pmode .fabm{display:none!important}
-select.pay{max-width:110px;flex:none;font:inherit;font-size:15px;height:34px;border-radius:9px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);padding:0 2px}
+select.pay{max-width:150px;flex:none;font:inherit;font-size:15px;height:34px;border-radius:9px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);padding:0 2px}
 .rcv{flex:none;border:0;background:transparent;font:inherit;font-size:18px;cursor:pointer;padding:0 2px;color:var(--ink)}
 .rcbtns{display:flex;gap:8px;padding:0 10px 12px;flex-wrap:wrap}.rcbtns .btn{flex:1 1 140px}
 .rcm{position:fixed;inset:0;z-index:95;background:rgba(10,20,40,.5);display:grid;place-items:end center}
@@ -353,6 +356,7 @@ body.guest details.money input,body.guest details.money select,body.guest detail
   <div class="card hero" id="bhero"></div>
   <div class="stats" id="bstats"></div>
   <div class="card"><h2>รายการที่เกิน / ต่ำกว่าแพลน</h2><p class="tnote">เฉพาะรายการที่กรอกยอดจริงแล้ว เรียงจากต่างมากสุด · แตะเพื่อไปที่วันนั้น</p><div class="btab" id="bitems"></div></div>
+  <div class="card"><h2>💳 จ่ายด้วยอะไร เท่าไร</h2><p class="tnote">นับเฉพาะรายการที่กรอกยอดจริงแล้ว · แตะแต่ละบัตรเพื่อดูรายการ · เปลี่ยนบัตรของรายการได้ที่ช่อง 💴/💳 ในแต่ละรายการ</p><div id="bypay"></div></div>
   <div class="bgrid">
    <div class="card"><h2>แยกตามหมวด</h2><p class="tnote">ยอดจริง = ยอดที่กรอกแล้ว · <span class="est">ตัวเอียงจาง</span> = ยังไม่กรอกเลย ใช้แพลนแทน · * = กรอกแล้วบางรายการ · ส่วนต่าง + คือเกินแพลน</p><div class="btab" id="cats"></div></div>
    <div class="card"><h2>แยกตามวัน</h2><p class="tnote">แตะแถวเพื่อไปที่วันนั้น · ค่าเช่ารถเฉลี่ยเข้า D1–D9</p><div class="btab" id="bydays"></div></div>
@@ -374,11 +378,11 @@ body.guest details.money input,body.guest details.money select,body.guest detail
    <div class="view">
     <div class="card" id="fxcard"><h2>💳 บัตร / กระเป๋าเงิน</h2><p class="tip">เพิ่มบัตรที่จะใช้ในทริป เช่น YouTrip ของ Parker หรือบัตรเครดิตของอีกคน แล้วเลือกได้ในแต่ละรายการและตอนบันทึกใบเสร็จ ถ้าเป็น Travel Card (เติมเงิน) ระบบจะคำนวณยอดคงเหลือให้</p>
      <div id="cardlist"></div>
-     <div class="rcg"><label class="field"><span>ชื่อบัตร</span><input id="cdname" type="text" placeholder="เช่น YouTrip, KBank Visa"></label><label class="field"><span>ของใคร</span><input id="cdowner" type="text" placeholder="เช่น Parker"></label></div>
-     <label class="field"><span>ประเภท</span><select id="cdtype" class="cur"><option value="wallet">🎫 Travel Card / เติมเงิน (มียอดคงเหลือ)</option><option value="credit">💳 บัตรเครดิต / เดบิต</option></select></label>
+     <div class="rcg"><label class="field"><span>ชื่อบัตร</span><input id="cdname" type="text" placeholder="เช่น YouTrip, KTC Visa, Suica"></label><label class="field"><span>ของใคร</span><input id="cdowner" type="text" placeholder="เช่น Parker"></label></div>
+     <label class="field"><span>ประเภท</span><select id="cdtype" class="cur"><option value="credit">💳 บัตรเครดิต</option><option value="debit">🏦 บัตรเดบิต</option><option value="wallet">🎫 Travel Card / เติมเงิน (มียอดคงเหลือ)</option><option value="ic">🚃 บัตร IC: Suica / Kitaca / ICOCA (มียอดคงเหลือ)</option></select></label>
      <div class="btnrow"><button id="cdadd" class="btn" type="button">+ เพิ่มบัตร</button></div>
      <h2 style="margin-top:18px">💴 แลกเงิน / เติม Travel Card</h2><p class="tip">การแลกเงินหรือเติมเงินเข้า Travel Card ไม่นับเป็นค่าใช้จ่าย บันทึกไว้เพื่อหาเรตจริงที่ได้ และดูว่าเงินเยนเหลือเท่าไร ในแต่ละรายการเลือกได้ว่าจ่ายด้วยเงินสดหรือบัตรใบไหน</p>
-     <label class="field"><span>แลกเป็น</span><select id="fxw" class="cur"></select></label>
+     <label class="field"><span>เงินมาจาก</span><select id="fxfrom" class="cur"></select></label><label class="field"><span>เข้ากระเป๋า</span><select id="fxw" class="cur"></select></label>
      <div class="rcg"><label class="field"><span>จ่ายไป (บาท)</span><input id="fxthb" type="number" step="0.01" inputmode="decimal"></label><label class="field"><span>ได้เงินเยน (¥)</span><input id="fxjpy" type="number" step="1" inputmode="numeric"></label></div>
      <label class="field"><span>ที่แลก / หมายเหตุ (ถ้ามี)</span><input id="fxnote" type="text" placeholder="เช่น SuperRich, ตู้ ATM สนามบิน"></label>
      <div class="btnrow"><button id="fxadd" class="btn" type="button">+ บันทึกการแลก</button></div>
@@ -567,14 +571,16 @@ function status(t){const a=document.getElementById("saved");if(a)a.textContent=t
 function diffTxt(it){const p=thb(it,"plan")||0,a=thb(it,"actual");
   if(a===null)return it.cur==="JPY"&&p?`≈ ฿${fmt(p)}`:"";const d=a-p;
   return `<span class="${d>0?"up":"down"}">จ่ายจริง ฿${fmt(a)} · ${d>0?"เกินแพลน":"ต่ำกว่าแพลน"} ฿${fmt(Math.abs(d))}</span>`}
-const BASEPAY=[{id:"cash",ic:"💴",name:"เงินสด",type:"wallet"},{id:"card",ic:"💳",name:"บัตรเครดิต",type:"credit"}];
-function pays(){return BASEPAY.concat((S.cards||[]).map(x=>Object.assign({ic:x.type==="wallet"?"🎫":"💳"},x)))}
+const PTYPE={credit:{ic:"💳",l:"บัตรเครดิต"},debit:{ic:"🏦",l:"บัตรเดบิต"},wallet:{ic:"🎫",l:"Travel Card (เติมเงิน)",w:1},ic:{ic:"🚃",l:"บัตร IC (Suica/Kitaca/ICOCA)",w:1},cash:{ic:"💴",l:"เงินสด",w:1}};
+const BASEPAY=[{id:"cash",ic:"💴",name:"เงินสด",type:"cash"},{id:"card",ic:"💳",name:"บัตรเครดิต (ไม่ระบุใบ)",type:"credit"}];
+function pays(){return BASEPAY.concat((S.cards||[]).map(x=>Object.assign({ic:(PTYPE[x.type]||PTYPE.credit).ic},x)))}
 function payLabel(p,short){const n=short?p.name.slice(0,10):p.name;return p.ic+" "+n+(p.owner?(short?" ("+p.owner.slice(0,6)+")":" · "+p.owner):"")}
-function wallets(){return pays().filter(p=>p.type==="wallet")}
+function wallets(){return pays().filter(p=>(PTYPE[p.type]||{}).w)}
+function walName(p){return p.id==="cash"?"💴 เงินสดเยน":payLabel(p)}
 function payById(id){return pays().find(p=>p.id===id)}
 function payOf(it){if(it.pay&&payById(it.pay))return it.pay;return ((it.cur!=="JPY"||it.day==="pre"||it.cat==="ที่พัก"||it.cat==="รถเช่า")?"card":"cash")}
 function row(it){return `<div class="erow" data-id="${it.id}">
-  <div class="er-top"><span class="catchip">${esc(it.cat)}</span><input class="desc" data-f="desc" value="${esc(it.desc)}" aria-label="ชื่อรายการ">${(it.rc&&it.rc.length)?`<button class="rcv" type="button" data-rcv="${it.id}" aria-label="ดูใบเสร็จ">🧾${it.rc.length>1?it.rc.length:""}</button>`:""}<select class="pay" data-f="pay" aria-label="จ่ายด้วย">${pays().map(p=>`<option value="${p.id}"${payOf(it)===p.id?" selected":""}>${esc(payLabel(p,true))}</option>`).join("")}</select><button class="x" data-del="${it.id}" type="button" aria-label="ลบรายการ">✕</button></div>
+  <div class="er-top"><span class="catchip">${esc(it.cat)}</span><input class="desc" data-f="desc" value="${esc(it.desc)}" aria-label="ชื่อรายการ">${(it.rc&&it.rc.length)?`<button class="rcv" type="button" data-rcv="${it.id}" aria-label="ดูใบเสร็จ">🧾${it.rc.length>1?it.rc.length:""}</button>`:""}<select class="pay" data-f="pay" aria-label="จ่ายด้วย">${pays().map(p=>`<option value="${p.id}"${payOf(it)===p.id?" selected":""}>${esc(payLabel(p,true))}</option>`).join("")}<option value="__add">➕ เพิ่มบัตร…</option></select><button class="x" data-del="${it.id}" type="button" aria-label="ลบรายการ">✕</button></div>
   ${it.spread>1?`<div class="er-note">จ่ายครั้งเดียว · หารเฉลี่ยเข้า D${sfrom(it)}–D${sfrom(it)+it.spread-1}</div>`:""}
   <div class="er-amt"><label class="amtf"><span>แพลน</span><input data-f="plan" type="number" step="0.01" inputmode="decimal" value="${it.plan??""}"></label>
    <label class="amtf act"><span>จ่ายจริง</span><input data-f="actual" type="number" step="0.01" inputmode="decimal" value="${it.actual??""}" placeholder="แตะเพื่อกรอก"></label>
@@ -734,8 +740,17 @@ function totals(){
   const sum=arr=>arr.reduce((s,b)=>({p:s.p+b.p,e:s.e+b.e}),{p:0,e:0});
   document.getElementById("cats").innerHTML=HD+cats.map(c=>row("div","",c,byCat[c])).join("")+tot(sum(cats.map(c=>byCat[c])));
   const dk=["pre",...DAYS.map(d=>String(d.n)),"post"].filter(k=>byDay[k]);
+  renderPay();
   document.getElementById("bydays").innerHTML=HD+dk.map(k=>row("button",` type="button" data-jump="${k}"`,k==="pre"?"ก่อนเดินทาง":k==="post"?"อื่นๆ":`D${k} ${DAYS[k-1].dl.split(" ").slice(1).join(" ")}`,byDay[k])).join("")+tot(sum(dk.map(k=>byDay[k])));
 }
+function renderPay(){const f0=v=>Math.round(v).toLocaleString("en-US");const el=document.getElementById("bypay");if(!el)return;const done=S.items.filter(i=>i.actual!=null&&i.actual!==""&&!isNaN(i.actual));
+  const lab=d=>d==="pre"?"ก่อนเดินทาง":d==="post"?"อื่นๆ":"D"+d;const g={};done.forEach(i=>{const k=payOf(i);(g[k]=g[k]||[]).push(i)});
+  const tot=done.reduce((a,i)=>a+(thb(i,"actual")||0),0);const ps=pays().filter(p=>g[p.id]||cashLeft(p.id)!==null);
+  if(!ps.length){el.innerHTML=`<p class="tnote">ยังไม่มีรายการที่กรอกยอดจริง</p>`;return}
+  el.innerHTML=ps.map(p=>{const L=(g[p.id]||[]).slice().sort((a,b)=>String(a.day).localeCompare(String(b.day),undefined,{numeric:true}));const T=L.reduce((a,i)=>a+(thb(i,"actual")||0),0);
+    const Y=L.filter(i=>i.cur==="JPY").reduce((a,i)=>a+(+i.actual),0),B=L.filter(i=>i.cur!=="JPY").reduce((a,i)=>a+(+i.actual),0);const left=cashLeft(p.id);
+    return `<details class="paygrp"><summary><span class="pn">${esc(p.id==="cash"?"💴 เงินสด":payLabel(p))}<small>${L.length} รายการ${Y?` · ¥${Math.round(Y).toLocaleString("en-US")}`:""}${B?` · ฿${f0(B)}`:""}${left!==null?` · <b class="${left<0?"warn":"ok"}">เหลือ ¥${Math.round(left).toLocaleString("en-US")}</b>`:""}</small></span><span class="pv">฿${f0(T)}<small>${tot?Math.round(T/tot*100):0}%</small></span></summary>
+     <div class="paylist">${L.map(i=>`<button class="brow" type="button" data-jump="${i.day}"><span class="bn">${esc(lab(i.day)+" · "+(i.desc||i.cat))}</span><span>${i.cur==="JPY"?"¥"+Math.round(+i.actual).toLocaleString("en-US"):"฿"+f0(+i.actual)}</span><span>฿${f0(thb(i,"actual"))}</span><span class="tnote">${esc(i.cat)}</span></button>`).join("")||`<p class="tnote">ยังไม่มีรายการ</p>`}</div></details>`}).join("")+`<div class="brow bt"><span class="bn">รวมที่จ่ายจริงแล้ว</span><span></span><span>฿${f0(tot)}</span><span></span></div>`}
 function refreshRow(el){const it=S.items.find(i=>i.id===el.dataset.id);if(it)el.querySelector('[data-out="diff"]').innerHTML=diffTxt(it)}
 function renderAll(){renderDays();renderSum();renderStays();renderTrip();renderFood();renderGuide();totals();try{const o=localStorage.getItem("hk-off");const s=document.getElementById("offst");if(o&&s&&!s.textContent)s.textContent=o}catch(e){}loadWX()}
 document.addEventListener("input",e=>{const t=e.target;
@@ -792,23 +807,28 @@ function setTheme(m){const r=document.documentElement;if(m==="auto")r.removeAttr
   const dk=m==="dark"||(m==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);document.querySelectorAll('meta[name="theme-color"]').forEach(x=>{x.removeAttribute("media");x.content=dk?"#0e1621":"#eef3f8"})}
 /* fx exchange */
 function walIn(w){return (S.fxlog||[]).filter(x=>(x.w||"cash")===w).reduce((a,x)=>a+(+x.jpy||0),0)}
-function walOut(w){return S.items.filter(i=>i.cur==="JPY"&&payOf(i)===w&&i.actual!=null&&!isNaN(i.actual)).reduce((a,i)=>a+(+i.actual),0)}
-function cashLeft(w){w=w||"cash";return (S.fxlog||[]).some(x=>(x.w||"cash")===w)?walIn(w)-walOut(w):null}
-function renderCards(){const el=document.getElementById("cardlist");if(el)el.innerHTML=(S.cards||[]).map(x=>`<div class="cardrow"><span>${esc(payLabel(Object.assign({ic:x.type==="wallet"?"🎫":"💳"},x)))} <small class="tnote">${x.type==="wallet"?"เติมเงิน/มียอดคงเหลือ":"บัตรเครดิต/เดบิต"}</small></span><button type="button" data-carddel="${x.id}" aria-label="ลบ">✕</button></div>`).join("")||`<p class="tnote">ยังไม่ได้เพิ่มบัตร ใช้ได้แค่ 💴 เงินสด กับ 💳 บัตรเครดิต (รวม)</p>`;
-  const w=document.getElementById("fxw");if(w){const v=w.value;w.innerHTML=wallets().map(p=>`<option value="${p.id}">${p.id==="cash"?"💴 เงินสดเยน":"เติมเข้า "+esc(payLabel(p))}</option>`).join("");if([...w.options].some(o=>o.value===v))w.value=v}}
+function walSpent(w){return S.items.filter(i=>i.cur==="JPY"&&payOf(i)===w&&i.actual!=null&&!isNaN(i.actual)).reduce((a,i)=>a+(+i.actual),0)}
+function walXfer(w){return (S.fxlog||[]).filter(x=>x.from===w).reduce((a,x)=>a+(+x.jpy||0),0)}
+function walOut(w){return walSpent(w)+walXfer(w)}
+function cashLeft(w){w=w||"cash";return (S.fxlog||[]).some(x=>(x.w||"cash")===w||x.from===w)?walIn(w)-walOut(w):null}
+function renderCards(){const el=document.getElementById("cardlist");if(el)el.innerHTML=(S.cards||[]).map(x=>`<div class="cardrow"><span>${esc(payLabel(Object.assign({ic:(PTYPE[x.type]||PTYPE.credit).ic},x)))} <small class="tnote">${esc((PTYPE[x.type]||PTYPE.credit).l)}</small></span><button type="button" data-carddel="${x.id}" aria-label="ลบ">✕</button></div>`).join("")||`<p class="tnote">ยังไม่ได้เพิ่มบัตร ใช้ได้แค่ 💴 เงินสด กับ 💳 บัตรเครดิต (รวม)</p>`;
+  const w=document.getElementById("fxw");if(w){const v=w.value;w.innerHTML=wallets().map(p=>`<option value="${p.id}">${p.id==="cash"?"💴 เงินสดเยน":"เติมเข้า "+esc(payLabel(p))}</option>`).join("");if([...w.options].some(o=>o.value===v))w.value=v}
+  const f=document.getElementById("fxfrom");if(f){const v=f.value;f.innerHTML=`<option value="">💵 จ่ายเป็นเงินบาท (แลก/เติมใหม่)</option>`+wallets().map(p=>`<option value="${p.id}">โอนจาก ${esc(walName(p))} (เยน)</option>`).join("");if([...f.options].some(o=>o.value===v))f.value=v;fxFromUI()}}
+function fxFromUI(){const f=document.getElementById("fxfrom"),t=document.getElementById("fxthb");if(!f||!t)return;const l=t.closest("label");if(l)l.style.display=f.value?"none":""}
+document.addEventListener("change",e=>{if(e.target.id==="fxfrom")fxFromUI()});
 function rcCash(){const el=document.getElementById("rcash");if(!el)return;const pay=document.getElementById("rpay").value,cur=document.getElementById("rcur").value,amt=parseFloat(document.getElementById("ramt").value)||0;
   const p=payById(pay);if(!p||p.type!=="wallet"){el.textContent=(p?payLabel(p):"💳")+" · ไม่หักจากเงินสดหรือ Travel Card";return}
   const nm=p.id==="cash"?"💴 เงินสดเยน":payLabel(p);const left=cashLeft(pay);if(left===null){el.textContent=`${nm}: ยังไม่ได้บันทึกการแลก/เติมเงิน (หน้าตั้งค่า) เลยยังคำนวณยอดคงเหลือไม่ได้`;return}
   el.innerHTML=`${esc(nm)} เหลือ ¥${Math.round(left).toLocaleString("en-US")}`+(cur==="JPY"?` → หลังบันทึก <b>¥${Math.round(left-amt).toLocaleString("en-US")}</b>`:"")}
 document.addEventListener("input",e=>{if(["ramt","rpay","rcur"].includes(e.target.id))rcCash()});
 function renderFx(){const L=S.fxlog||[];const el=document.getElementById("fxlist");if(!el)return;
-  const T=L.reduce((a,x)=>a+(+x.thb||0),0),Y=L.reduce((a,x)=>a+(+x.jpy||0),0);
+  const LX=L.filter(x=>!x.from);const T=LX.reduce((a,x)=>a+(+x.thb||0),0),Y=LX.reduce((a,x)=>a+(+x.jpy||0),0);
   const rate=Y>0?T/Y:0;
-  el.innerHTML=L.map(x=>{const p=payById(x.w||"cash");return `<div class="fxrow"><span>${p?esc(p.id==="cash"?"💴":payLabel(p,true)):"❔"} ${esc(x.date||"")} ${esc(x.note||"")}</span><span>฿${fmt(+x.thb)} → ¥${Math.round(+x.jpy).toLocaleString("en-US")} <button type="button" data-fxdel="${x.id}" aria-label="ลบ">✕</button></span></div>`}).join("")+
-   (L.length?`<div class="fxsum"><span>รวมแลก ฿${fmt(T)} → ¥${Math.round(Y).toLocaleString("en-US")}</span><span>เรตเฉลี่ยที่ได้ <b>${rate.toFixed(4)}</b> บาท/เยน${Math.abs(rate-S.fx)>0.00005?` · ตอนนี้แอปใช้ ${S.fx}`:" · ใช้เรตนี้อยู่แล้ว ✓"}</span>${Math.abs(rate-S.fx)>0.00005?`<div class="btnrow"><button id="fxuse" class="btn sm" type="button" data-rate="${rate.toFixed(4)}">ใช้เรต ${rate.toFixed(4)} คำนวณงบ</button></div>`:""}${wallets().filter(p=>L.some(x=>(x.w||"cash")===p.id)).map(p=>p.id).map(w=>`<span>${esc(w==="cash"?"💴 เงินสดเยน":payLabel(payById(w)))}: เข้า ¥${Math.round(walIn(w)).toLocaleString("en-US")} · ใช้ไป ¥${Math.round(walOut(w)).toLocaleString("en-US")} · <b>เหลือ ¥${Math.round(walIn(w)-walOut(w)).toLocaleString("en-US")}</b></span>`).join("")}</div>`:`<p class="tnote">ยังไม่มีรายการแลกเงิน</p>`)}
+  el.innerHTML=L.map(x=>{const p=payById(x.w||"cash"),fp=x.from?payById(x.from):null;return `<div class="fxrow"><span>${p?esc(p.id==="cash"?"💴":payLabel(p,true)):"❔"} ${esc(x.date||"")} ${esc(x.note||"")}</span><span>${x.from?`โอนจาก ${esc(fp?(fp.id==="cash"?"💴 เงินสด":payLabel(fp,true)):"?")} ¥${Math.round(+x.jpy).toLocaleString("en-US")}`:`฿${fmt(+x.thb)} → ¥${Math.round(+x.jpy).toLocaleString("en-US")}`} <button type="button" data-fxdel="${x.id}" aria-label="ลบ">✕</button></span></div>`}).join("")+
+   (L.length?`<div class="fxsum">${LX.length?"":"<span>ยังไม่มีรายการแลกเงินบาท</span>"}<span>รวมแลก ฿${fmt(T)} → ¥${Math.round(Y).toLocaleString("en-US")}</span><span>เรตเฉลี่ยที่ได้ <b>${rate.toFixed(4)}</b> บาท/เยน${Math.abs(rate-S.fx)>0.00005?` · ตอนนี้แอปใช้ ${S.fx}`:" · ใช้เรตนี้อยู่แล้ว ✓"}</span>${Math.abs(rate-S.fx)>0.00005?`<div class="btnrow"><button id="fxuse" class="btn sm" type="button" data-rate="${rate.toFixed(4)}">ใช้เรต ${rate.toFixed(4)} คำนวณงบ</button></div>`:""}${wallets().filter(p=>L.some(x=>(x.w||"cash")===p.id||x.from===p.id)).map(p=>p.id).map(w=>`<span>${esc(walName(payById(w)))}: เข้า ¥${Math.round(walIn(w)).toLocaleString("en-US")} · ใช้ไป ¥${Math.round(walSpent(w)).toLocaleString("en-US")}${walXfer(w)?` · โอนออก ¥${Math.round(walXfer(w)).toLocaleString("en-US")}`:""} · <b>เหลือ ¥${Math.round(walIn(w)-walOut(w)).toLocaleString("en-US")}</b></span>`).join("")}</div>`:`<p class="tnote">ยังไม่มีรายการแลกเงิน</p>`)}
 document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)return;
-  if(t.id==="fxadd"){const thb=parseFloat(document.getElementById("fxthb").value),jpy=parseFloat(document.getElementById("fxjpy").value);if(!(thb>0&&jpy>0))return;
-    S.fxlog=(S.fxlog||[]).concat({id:"fx"+Date.now().toString(36),thb,jpy,w:document.getElementById("fxw").value,note:document.getElementById("fxnote").value.trim(),date:new Date().toLocaleDateString("th-TH",{day:"numeric",month:"short"})});
+  if(t.id==="fxadd"){const from=(document.getElementById("fxfrom")||{}).value||"";const thb=from?0:parseFloat(document.getElementById("fxthb").value),jpy=parseFloat(document.getElementById("fxjpy").value);const wv=document.getElementById("fxw").value;if(!(jpy>0)||(!from&&!(thb>0))||from===wv)return;
+    S.fxlog=(S.fxlog||[]).concat({id:"fx"+Date.now().toString(36),thb,jpy,w:wv,from:from||undefined,note:document.getElementById("fxnote").value.trim(),date:new Date().toLocaleDateString("th-TH",{day:"numeric",month:"short"})});
     ["fxthb","fxjpy","fxnote"].forEach(i=>document.getElementById(i).value="");renderFx();save();return}
   if(t.dataset.fxdel){if(t.dataset.armed){S.fxlog=(S.fxlog||[]).filter(x=>x.id!==t.dataset.fxdel);renderFx();save()}else{t.dataset.armed="1";t.textContent="ลบ?";setTimeout(()=>{if(t.isConnected){delete t.dataset.armed;t.textContent="✕"}},2500)}return}
   if(t.id==="cdadd"){const name=document.getElementById("cdname").value.trim();if(!name){document.getElementById("cdname").focus();return}
@@ -818,7 +838,9 @@ document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)r
   if(t.id==="thm"){const cur=document.documentElement.getAttribute("data-theme")||"auto";const nx={auto:"light",light:"dark",dark:"auto"}[cur];setTheme(nx);return}
   if(t.id==="fxuse"){S.fx=+t.dataset.rate;document.getElementById("fx").value=S.fx;document.querySelectorAll(".erow").forEach(refreshRow);totals();renderFx();save();return}
 });
-document.addEventListener("input",e=>{if(e.target.dataset&&/^(pay|actual|cur)$/.test(e.target.dataset.f||""))renderFx()});
+document.addEventListener("input",e=>{const t=e.target;if(t.dataset&&t.dataset.f==="pay"&&t.value==="__add"){const r=t.closest(".erow");const it=r&&S.items.find(i=>i.id===r.dataset.id);if(it){if(it.pay==="__add")delete it.pay;t.value=payOf(it)}save();go("settings");setTimeout(()=>{const n=document.getElementById("cdname");if(n){n.scrollIntoView({block:"center"});n.focus()}},120);return}
+  if(t.id==="rpay"&&t.value==="__add"){t.value=RCPAY||"cash";const m=document.getElementById("rcm");if(m)m.remove();go("settings");setTimeout(()=>{const n=document.getElementById("cdname");if(n){n.scrollIntoView({block:"center"});n.focus()}},120);return}
+  if(t.dataset&&/^(pay|actual|cur)$/.test(t.dataset.f||""))renderFx()});
 document.addEventListener("click",e=>{const m=document.getElementById("fabm");if(m&&!m.hidden&&!e.target.closest("#fab,#fabm")){m.hidden=true;document.getElementById("fab").setAttribute("aria-expanded","false")}},true);
 /* receipts */
 const RCAPI=()=>(window.API||"");
@@ -847,7 +869,7 @@ async function rcStart(day,file){const key=rcKey();
    <p class="rcmsg${err?" err":""}">${err?(id?"ระบบอ่านใบเสร็จไม่ออก ("+esc(err)+") เก็บรูปไว้แล้ว กรอกยอดเองได้เลย":"ส่งใบเสร็จไม่สำเร็จ ("+esc(err)+") กรอกยอดเองได้ แต่จะไม่มีรูปแนบ"):"ระบบอ่านให้แล้ว เช็กยอดกับใบเสร็จอีกทีก่อนบันทึก"+(d&&d.date?" · วันที่ในใบเสร็จ "+esc(d.date):"")}</p>
    <div class="rcg"><label>วัน<select id="rday">${DAYOPTS.map(([v,l])=>`<option value="${v}"${v===dd?" selected":""}>${l}</option>`).join("")}</select></label><label>หมวด<select id="rcat">${CATS.map(x=>`<option${x===cat?" selected":""}>${x}</option>`).join("")}</select></label></div>
    <label>รายการ<input id="rdesc" type="text" value="${esc(desc)}" placeholder="เช่น ราเมน, 7-Eleven"></label>
-   <div class="rcg3"><label>ยอดที่จ่าย<input id="ramt" type="number" step="0.01" inputmode="decimal" value="${amt}"></label><label>สกุล<select id="rcur"><option value="JPY"${cur==="JPY"?" selected":""}>¥ เยน</option><option value="THB"${cur==="THB"?" selected":""}>฿ บาท</option></select></label><label>จ่ายด้วย<select id="rpay">${pays().map(p=>`<option value="${p.id}"${p.id===(RCPAY||"cash")?" selected":""}>${esc(payLabel(p,true))}</option>`).join("")}</select></label></div>
+   <div class="rcg3"><label>ยอดที่จ่าย<input id="ramt" type="number" step="0.01" inputmode="decimal" value="${amt}"></label><label>สกุล<select id="rcur"><option value="JPY"${cur==="JPY"?" selected":""}>¥ เยน</option><option value="THB"${cur==="THB"?" selected":""}>฿ บาท</option></select></label><label>จ่ายด้วย<select id="rpay">${pays().map(p=>`<option value="${p.id}"${p.id===(RCPAY||"cash")?" selected":""}>${esc(payLabel(p,true))}</option>`).join("")}<option value="__add">➕ เพิ่มบัตร…</option></select></label></div>
    <p class="rcmsg" id="rcash"></p>
    <label>บันทึกเป็น<select id="rinto"></select></label>
    <div class="rcact"><button class="btn" type="button" data-rcclose>ยกเลิก</button><button class="btn primary" type="button" id="rcsave">บันทึก</button></div>`);
