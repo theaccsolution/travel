@@ -6,6 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="ฮอกไกโด">
 <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAADo0lEQVR42u3bMW4TQRSA4XhEEdGlTJEDUFEi5QxIXCId4gIcgAuk5Bq5AkVOQE+TMh1KmcJSZGF7vbaZ2fdmvl9UYLC1+/m9jb2sbm7vLqRdFYdAcAgOwSE4BIfgEByCQ3AIDgkOwSE4BIfgEByCQ3AIDsEhwSE4BIfgEByCQ7F75xCE7ff3v9u/+eHHeziwmPqjNkTgSMOiPRHXHPlknPx4OEaR0cAHHIll1PYBh+DodGxUHR5wCI5+x0a94QGH4BAcgkNwCA7BoYt692fU+IYWDsHR9fCodGMHHIKj3+FR734wOHL7qHqnIByJfdS+h9QNxhF9HPyK1d3niPh/K1p0PLjmEByCQ3AIDsEhOASH4MjYn18/nVc49srgAw7BcdJCMTzgmLrU4AOOqR4f7p3j0XHsGxLXV5fO8dA4pteH5WKtxF0ueXWWET7yWnC5pP7cpQzyYegipyf75fBAH4K1P1WbEyvj8CjjfIdyfXXZ0kcHn7uUob5da3bx0cePSMN9t9JgeEw8RS40ZbQv5Rssl+n5lMhHyfjWf3p+OfPk1fPR02duvrJfYGdlAVSSHv2Aw+Px4X7+BW8KHyXv+3K+j6fnl/Wvej6OkpHFR+61MsfH5mO2ibS5CHXNEfFH0J0U3gbJ/xoeJ/8jwYdHyS5jYhIcHBLrB5zp44SFksVHDz+t7BsPDd76678487neJlal1TYijjln7p/D3ebob76wmVNqJ5Sww6P0d6lxmozzLz72Pe/BURF2kPTzIdj6EJ9zoI/ysfPB28+eZYPkw3Hsu7nZmZh5gTz/9cS8Lai4N+fYJz34mNNmWEAfvlupcpJSb5PoOJZ9G008e9UXFm14FDIu/P85a+VMB21khPJXvDvnvJKWryrOEShk2CPWSiYiQVCubm7vvE1j9unzN5ODDGtF2d4wxVFQXBxkhD041gofUXEYG9YKGSkPlLXCRzwcxoa1Qkbig2at8BEJh7FhrZCR/gBaK4qBw9jIdRgLGXxYK4qKw9jIeEgLGXxYK4qHw9jIe3gLGbJWDI9IOIyN7D4KGbJWDI8YOIyNPnwUMmStGB5L4zA2TA4yhhge1gof9XEYG9YKGQMND2uFj5o4jA1rhYzhhoe1ojo4jI2+h0chgw9rRUe3+vj1i6Mgk0NwCA7BITgEh+AQHIJDcEhwCA7BITgEh+AQHIJDcAgOCQ7BITgEh+AQHIJDcAgOwSE4JDgEh+AQHIJDcAgOwaG+ewVNU+hZNeO1vwAAAABJRU5ErkJggg==">
+<link rel="manifest" href="/manifest.webmanifest">
 <title>ทริปฮอกไกโดครั้งแรก</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@500;600&family=Anuphan:wght@400;500;600&display=swap">
@@ -376,7 +377,7 @@ body.guest details.money input,body.guest details.money select,body.guest detail
      <label class="field"><span>ที่แลก / หมายเหตุ (ถ้ามี)</span><input id="fxnote" type="text" placeholder="เช่น SuperRich, ตู้ ATM สนามบิน"></label>
      <div class="btnrow"><button id="fxadd" class="btn" type="button">+ บันทึกการแลก</button></div>
      <div id="fxlist"></div></div>
-    <div class="card"><h2>ใช้เหมือนแอป</h2><p class="tip">บน iPhone / iPad เปิดหน้านี้ใน <b>Safari</b> → กดปุ่ม <b>แชร์</b> → <b>เพิ่มไปยังหน้าจอโฮม</b> จะได้ไอคอนเปิดแบบเต็มจอเหมือนแอป</p></div>
+    <div class="card"><h2>ใช้เหมือนแอป</h2><div class="btnrow" id="instrow" hidden><button id="instbtn" class="btn primary" type="button">📲 ติดตั้งเป็นแอปในเครื่องนี้</button></div><p class="tip" id="instok" hidden>✓ เปิดแบบแอปอยู่แล้ว</p><p class="tip">บน Chrome / Edge (คอมหรือ Android) กดปุ่มด้านบน หรือเมนู ⋮ → <b>ติดตั้งแอป</b> / <b>เพิ่มลงในหน้าจอหลัก</b> · บน iPhone / iPad เปิดหน้านี้ใน <b>Safari</b> → กดปุ่ม <b>แชร์</b> → <b>เพิ่มไปยังหน้าจอโฮม</b> จะได้ไอคอนเปิดแบบเต็มจอเหมือนแอป</p></div>
     <div class="card"><h2>เกี่ยวกับข้อมูล</h2><p class="foot">ยอดที่กรอกซิงก์ผ่านคลาวด์ (Cloudflare) ใส่รหัสครั้งแรกในแต่ละเครื่อง แล้วเปิดจากมือถือหรือคอมก็เห็นข้อมูลเดียวกัน คนที่ไม่มีรหัสเห็นแค่แผน ไม่เห็นยอดจริง · ปุ่ม "ส่งออก CSV" ใช้เก็บสำรองหรือเปิดใน Excel · ภาพทั้งหมดถ่ายช่วงปลาย พ.ย.–ธ.ค. จาก Wikimedia Commons ใช้ตามสัญญาอนุญาตของผู้ถ่าย · จุดที่ยังไม่มีภาพฟรีช่วงนี้ กดปุ่ม ↗ เพื่อดูภาพหน้าหนาวใน Google Images</p></div>
    </div>
   </div>
@@ -771,6 +772,12 @@ document.addEventListener("click",e=>{
     const lines=[head.map(q).join(",")].concat(S.items.map(i=>[lab(i.day),i.cat,i.desc,i.cur,i.plan??"",i.actual??"",(thb(i,"plan")||0).toFixed(2),thb(i,"actual")===null?"":thb(i,"actual").toFixed(2)].map(q).join(",")));
     const blob=new Blob(["﻿"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="hokkaido_budget_"+new Date().toISOString().slice(0,10)+".csv";document.body.appendChild(a);a.click();a.remove()}
 });
+/* install (PWA) */
+let DEFERRED=null;
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();DEFERRED=e;const r=document.getElementById("instrow");if(r)r.hidden=false});
+addEventListener("appinstalled",()=>{DEFERRED=null;const r=document.getElementById("instrow");if(r)r.hidden=true;const o=document.getElementById("instok");if(o)o.hidden=false});
+document.addEventListener("click",async e=>{if(!e.target.closest("#instbtn")||!DEFERRED)return;DEFERRED.prompt();try{await DEFERRED.userChoice}catch(_){}DEFERRED=null;document.getElementById("instrow").hidden=true});
+if(matchMedia("(display-mode: standalone)").matches||navigator.standalone){addEventListener("DOMContentLoaded",()=>{const o=document.getElementById("instok");if(o)o.hidden=false})}
 /* theme */
 function setTheme(m){const r=document.documentElement;if(m==="auto")r.removeAttribute("data-theme");else r.setAttribute("data-theme",m);try{if(m==="auto")localStorage.removeItem("hk-theme");else localStorage.setItem("hk-theme",m)}catch(e){}
   const b=document.getElementById("thm");if(b){b.textContent={auto:"🌓",light:"☀️",dark:"🌙"}[m];b.title=b.ariaLabel={auto:"ธีมอัตโนมัติตามเครื่อง (แตะเพื่อเปลี่ยนเป็นกลางวัน)",light:"ธีมกลางวัน (แตะเพื่อเปลี่ยนเป็นกลางคืน)",dark:"ธีมกลางคืน (แตะเพื่อกลับเป็นอัตโนมัติ)"}[m]}
