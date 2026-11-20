@@ -204,9 +204,11 @@ details.money[open]>summary::after{transform:rotate(-135deg);margin-bottom:-4px}
 .docrow .da{display:flex;gap:4px;flex:none}.docrow .da button,.docrow .da a{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;height:38px;min-width:38px;padding:0 8px;font:inherit;font-size:16px;cursor:pointer;display:grid;place-items:center;text-decoration:none}
 #v-docs .card{min-width:0;overflow:hidden}#docform .btnrow{grid-template-columns:1fr}#docform .btn{white-space:normal;height:auto;min-height:44px}@media(min-width:600px){#docform .btnrow{grid-template-columns:1fr 1fr}}
 .pwchip{border:0;background:var(--ice);color:var(--ink);border-radius:8px;padding:2px 6px;font:inherit;font-size:12.5px;cursor:pointer}
-.docv{position:fixed;inset:0;z-index:96;background:rgba(10,20,40,.85);display:grid;grid-template-rows:auto 1fr;padding-top:env(safe-area-inset-top)}
-.docv .dvh{display:flex;gap:8px;align-items:center;padding:10px 12px;background:var(--surface);color:var(--ink)}.docv .dvh b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.docv .dvb{overflow:auto;display:grid;place-items:center;padding:10px}.docv .dvb img{max-width:100%;height:auto;background:#fff}.docv .dvb iframe{width:100%;height:100%;border:0;background:#fff;border-radius:6px}
+.docv{position:fixed;inset:0;z-index:96;background:#222a35;display:grid;grid-template-rows:auto minmax(0,1fr);height:100vh;height:100dvh;padding-top:env(safe-area-inset-top)}
+.docv .dvh{display:flex;gap:6px;align-items:center;padding:8px 10px;flex-wrap:wrap;background:var(--surface);color:var(--ink)}.docv .dvh b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.docv .dvb{overflow:auto;-webkit-overflow-scrolling:touch;display:grid;place-items:center;padding:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom))}.docv .dvb img{width:100%;max-width:1000px;height:auto;background:#fff}
+.docv .dvb.pdfv{display:block;padding:0}.pdfbar{position:sticky;top:0;left:0;z-index:2;display:flex;gap:6px;align-items:center;justify-content:flex-end;padding:6px 8px;background:rgba(34,42,53,.92);color:#fff;font-size:13px}.pdfbar span{flex:1}
+.pdfpages{width:100%;padding:8px;box-sizing:border-box;display:grid;gap:8px;justify-items:center}.pdfpg{width:100%;max-width:1000px;height:auto;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.4)}.docv .dvb iframe{width:100%;height:100%;border:0;background:#fff;border-radius:6px}
 @media print{.docv{display:none!important}}
 .fab{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:calc(var(--tab-h,64px) + env(safe-area-inset-bottom) + 16px);z-index:40;width:58px;height:58px;border-radius:50%;border:0;background:var(--navy);color:var(--onnavy);font-size:26px;box-shadow:0 6px 18px rgba(0,0,0,.28);cursor:pointer;display:grid;place-items:center}
 @media (min-width:768px){.fab{bottom:24px;right:24px}}
@@ -856,9 +858,21 @@ async function docView(id){const d=(DOCS||[]).find(x=>x.id===id);if(!d)return;le
   m=document.createElement("div");m.id="docv";m.className="docv";m.innerHTML=`<div class="dvh"><b>${esc(d.name)}</b>${d.pw?`<button class="btn sm" type="button" data-pwcopy="${d.id}">🔑 ${esc(d.pw)}</button>`:""}<button class="btn sm" type="button" data-docdl="${d.id}">⬇ โหลด</button><button class="btn sm" type="button" data-docclose>✕ ปิด</button></div><div class="dvb"><p class="rcmsg" style="color:#fff">กำลังเปิด…</p></div>`;document.body.appendChild(m);
   try{const b=await docFetch(d);const u=URL.createObjectURL(b);const box=m.querySelector(".dvb");
     if(/^image\//.test(b.type))box.innerHTML=`<img src="${u}" alt="${esc(d.name)}">`;
-    else if(/pdf/.test(b.type)){box.style.placeItems="stretch";box.innerHTML=`<iframe src="${u}" title="${esc(d.name)}"></iframe>`}
+    else if(/pdf/.test(b.type)){try{await renderPdf(b,d,box)}catch(err){box.style.placeItems="stretch";box.innerHTML=`<iframe src="${u}" title="${esc(d.name)}"></iframe>`}}
     else box.innerHTML=`<p class="rcmsg" style="color:#fff">ไฟล์ชนิดนี้ดูตัวอย่างไม่ได้ กด ⬇ โหลด เพื่อเปิด</p>`;renderDocs(false)}
   catch(e){m.querySelector(".dvb").innerHTML=`<p class="rcmsg err" style="color:#fff">${esc(e.message)}</p>`}}
+const PDFJS="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+async function renderPdf(blob,d,box){await loadLib(PDFJS+"pdf.min.js","pdfjsLib");pdfjsLib.GlobalWorkerOptions.workerSrc=PDFJS+"pdf.worker.min.js";
+  const data=new Uint8Array(await blob.arrayBuffer());let pw=d.pw||undefined,pdf=null,asked=false;
+  for(let tries=0;tries<4&&!pdf;tries++){try{pdf=await pdfjsLib.getDocument({data:data.slice(),password:pw}).promise}catch(e){if(e&&e.name==="PasswordException"){const v=prompt((asked||pw?"รหัสไม่ถูกต้อง ":"")+"ไฟล์นี้ล็อกรหัสไว้ ใส่รหัสเปิดไฟล์:","");if(v===null)throw e;pw=v.trim();asked=true}else throw e}}
+  if(!pdf)throw new Error("เปิด PDF ไม่ได้");
+  if(asked&&pw&&pw!==d.pw){try{const r=await fetch(RCAPI()+"/api/doc?id="+encodeURIComponent(d.id)+"&pw="+encodeURIComponent(pw),{method:"PATCH",headers:{"x-edit-key":docKey()}});if(r.ok){d.pw=pw;saveDocList()}}catch(_){}}
+  box.classList.add("pdfv");box.innerHTML=`<div class="pdfbar"><span id="pdfinfo">${pdf.numPages} หน้า</span><button class="btn sm" type="button" data-pdfz="-1">－</button><button class="btn sm" type="button" data-pdfz="1">＋</button></div><div class="pdfpages" id="pdfpages"></div>`;
+  const wrap=box.querySelector("#pdfpages");const W=Math.max(320,box.clientWidth-16);const dpr=Math.min(3,Math.max(2,window.devicePixelRatio||1));
+  for(let i=1;i<=pdf.numPages;i++){const pg=await pdf.getPage(i);const v1=pg.getViewport({scale:1});const vp=pg.getViewport({scale:(W/v1.width)*dpr});
+    const cv=document.createElement("canvas");cv.width=Math.floor(vp.width);cv.height=Math.floor(vp.height);cv.className="pdfpg";wrap.appendChild(cv);
+    await pg.render({canvasContext:cv.getContext("2d"),viewport:vp}).promise;if(!box.isConnected)return}}
+document.addEventListener("click",e=>{const t=e.target.closest("[data-pdfz]");if(!t)return;const w=document.getElementById("pdfpages");if(!w)return;let z=+(w.dataset.z||100)+(+t.dataset.pdfz)*50;z=Math.max(100,Math.min(300,z));w.dataset.z=z;w.style.width=z+"%";const i=document.getElementById("pdfinfo");if(i)i.textContent=i.textContent.replace(/ · \d+%$/,"")+(z>100?" · "+z+"%":"")});
 async function docDownload(id){const d=(DOCS||[]).find(x=>x.id===id);if(!d)return;try{const b=await docFetch(d);let fn=d.name;const ext=/pdf/.test(b.type)?".pdf":/png/.test(b.type)?".png":/jpe?g/.test(b.type)?".jpg":"";if(ext&&!fn.toLowerCase().endsWith(ext))fn+=ext;
   const f=new File([b],fn,{type:b.type});if(navigator.canShare&&navigator.canShare({files:[f]})&&/iPhone|iPad|Android/i.test(navigator.userAgent)){try{await navigator.share({files:[f],title:d.name});return}catch(e){if(e.name==="AbortError")return}}
   const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);renderDocs(false)}catch(e){alert(e.message)}}
@@ -872,7 +886,7 @@ document.addEventListener("click",async e=>{const t=e.target.closest("button");i
   if(t.dataset.docclose!==undefined){const m=document.getElementById("docv");if(m)m.remove();return}
   if(t.dataset.docdel){if(!t.dataset.armed){t.dataset.armed="1";t.textContent="ลบ?";setTimeout(()=>{if(t.isConnected){delete t.dataset.armed;t.textContent="🗑"}},2500);return}
     const id=t.dataset.docdel;try{const r=await fetch(RCAPI()+"/api/doc?id="+encodeURIComponent(id),{method:"DELETE",headers:{"x-edit-key":docKey()}});if(!r.ok)throw 0;DOCS=(DOCS||[]).filter(d=>d.id!==id);saveDocList();try{const c=await caches.open("hk-docs");await c.delete("/doc-cache/"+id)}catch(_){}renderDocs(false)}catch(_){document.getElementById("docmsg").textContent="ลบไม่สำเร็จ ลองใหม่อีกครั้ง"}return}
-  if(t.id==="docoff"){const msg=document.getElementById("docmsg");const D=DOCS||[];let n=0;for(const d of D){msg.textContent=`กำลังเก็บ ${++n}/${D.length}…`;try{await docFetch(d)}catch(_){}}msg.textContent=`✓ เก็บไว้ดูออฟไลน์แล้ว ${D.length} ไฟล์ (เปิดได้แม้ไม่มีเน็ต ในเครื่อง/เบราว์เซอร์นี้)`;renderDocs(false);return}
+  if(t.id==="docoff"){const msg=document.getElementById("docmsg");const D=DOCS||[];let n=0;try{await loadLib(PDFJS+"pdf.min.js","pdfjsLib");await fetch(PDFJS+"pdf.worker.min.js",{mode:"no-cors"})}catch(_){}for(const d of D){msg.textContent=`กำลังเก็บ ${++n}/${D.length}…`;try{await docFetch(d)}catch(_){}}msg.textContent=`✓ เก็บไว้ดูออฟไลน์แล้ว ${D.length} ไฟล์ (เปิดได้แม้ไม่มีเน็ต ในเครื่อง/เบราว์เซอร์นี้)`;renderDocs(false);return}
 });
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){const m=document.getElementById("docv");if(m)m.remove()}});
 /* theme */
