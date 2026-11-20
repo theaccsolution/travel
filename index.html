@@ -203,6 +203,10 @@ details.money[open]>summary::after{transform:rotate(-135deg);margin-bottom:-4px}
 .docrow .di{font-size:24px;flex:none}.docrow .dn{flex:1;min-width:0;display:grid;gap:2px}.docrow .dn b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.docrow .dn small{color:var(--muted);font-size:12.5px}
 .docrow .da{display:flex;gap:4px;flex:none}.docrow .da button,.docrow .da a{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;height:38px;min-width:38px;padding:0 8px;font:inherit;font-size:16px;cursor:pointer;display:grid;place-items:center;text-decoration:none}
 #v-docs .card{min-width:0;overflow:hidden}#docform .btnrow{grid-template-columns:1fr}#docform .btn{white-space:normal;height:auto;min-height:44px}@media(min-width:600px){#docform .btnrow{grid-template-columns:1fr 1fr}}
+.docdrop{border:2px dashed var(--line);border-radius:14px;padding:18px 12px;text-align:center;color:var(--muted);font-size:14px;margin:4px 0 10px}
+@media (hover:none){.docdrop{display:none}}
+body.dragdoc .docdrop{border-color:var(--navy);background:var(--ice);color:var(--ink)}
+body.dragdoc #v-docs .card{outline:3px dashed var(--navy);outline-offset:-6px}
 .pwchip{border:0;background:var(--ice);color:var(--ink);border-radius:8px;padding:2px 6px;font:inherit;font-size:12.5px;cursor:pointer}
 .docv{position:fixed;inset:0;z-index:96;background:#222a35;display:grid;grid-template-rows:auto minmax(0,1fr);height:100vh;height:100dvh;padding-top:env(safe-area-inset-top)}
 .docv .dvh{display:flex;gap:6px;align-items:center;padding:8px 10px;flex-wrap:wrap;background:var(--surface);color:var(--ink)}.docv .dvh b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -382,7 +386,8 @@ body.guest details.money input,body.guest details.money select,body.guest detail
    <div id="doclock" class="rcmsg" hidden>🔒 ต้องใส่รหัสแก้ไขในหน้าตั้งค่าก่อน ถึงจะดูหรือเพิ่มเอกสารได้</div>
    <div id="docform"><div class="rcg"><label class="field"><span>หมวด</span><select id="doccat" class="cur"></select></label><label class="field"><span>ชื่อที่แสดง (ไม่ใส่ก็ได้)</span><input id="docname" type="text" placeholder="ใช้ชื่อไฟล์"></label></div>
     <label class="field"><span>รหัสเปิดไฟล์ (ถ้า PDF ล็อกรหัสไว้ เช่น กรมธรรม์)</span><input id="docpw" type="text" autocomplete="off" placeholder="ไม่มีก็เว้นว่าง"></label>
-    <div class="btnrow"><button id="docadd" class="btn primary" type="button">⬆️ เลือกไฟล์ / ถ่ายรูปเอกสาร</button><button id="docoff" class="btn" type="button">💾 เก็บทุกไฟล์ไว้ดูออฟไลน์</button></div>
+    <div id="docdrop" class="docdrop">📥 ลากไฟล์มาวางที่นี่ หรือกด Ctrl+V วางรูปที่แคปไว้</div>
+    <div class="btnrow"><button id="docadd" class="btn primary" type="button">⬆️ เลือกไฟล์ / ถ่ายรูปเอกสาร</button><button id="docpaste" class="btn" type="button">📋 วางรูปจากคลิปบอร์ด</button><button id="docoff" class="btn" type="button">💾 เก็บทุกไฟล์ไว้ดูออฟไลน์</button></div>
     <p class="rcmsg" id="docmsg"></p></div>
    <div id="doclist"></div></div>
  </section>
@@ -878,6 +883,12 @@ async function docDownload(id){const d=(DOCS||[]).find(x=>x.id===id);if(!d)retur
   const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);renderDocs(false)}catch(e){alert(e.message)}}
 document.addEventListener("click",async e=>{const t=e.target.closest("button");if(!t)return;
   if(t.id==="docadd"){const i=document.createElement("input");i.type="file";i.multiple=true;i.accept="application/pdf,image/*";i.onchange=()=>{if(i.files&&i.files.length)docUpload([...i.files])};i.click();return}
+  if(t.id==="docpaste"){const msg=document.getElementById("docmsg");
+    if(!navigator.clipboard||!navigator.clipboard.read){msg.textContent="เบราว์เซอร์นี้อ่านคลิปบอร์ดไม่ได้ ลองกด Ctrl+V บนคอม หรือใช้ปุ่มเลือกไฟล์";return}
+    try{const items=await navigator.clipboard.read();const fs=[];const stamp=new Date().toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}).replace(/[/:]/g,"-");
+      for(const it of items){const ty=it.types.find(x=>/^image\//.test(x)||/pdf/.test(x));if(!ty)continue;const b=await it.getType(ty);fs.push(new File([b],"รูปที่วาง "+stamp+(items.length>1?" ("+(fs.length+1)+")":"")+"."+(ty.split("/")[1]||"png").replace("jpeg","jpg"),{type:ty}))}
+      if(fs.length)docUpload(fs);else msg.textContent="ในคลิปบอร์ดไม่มีรูป แคปหน้าจอหรือกดคัดลอกรูปก่อน แล้วค่อยกดปุ่มนี้"}
+    catch(err){msg.textContent="อ่านคลิปบอร์ดไม่ได้ (ต้องกดอนุญาต) ลองอีกครั้ง หรือใช้ปุ่มเลือกไฟล์"}return}
   if(t.dataset.docview){docView(t.dataset.docview);return}
   if(t.dataset.pwcopy){const d=(DOCS||[]).find(x=>x.id===t.dataset.pwcopy);if(d&&d.pw){try{await navigator.clipboard.writeText(d.pw);const o=t.textContent;t.textContent="✓ คัดลอกรหัสแล้ว";setTimeout(()=>{if(t.isConnected)t.textContent=o},1500)}catch(_){}}return}
   if(t.dataset.docpw){const d=(DOCS||[]).find(x=>x.id===t.dataset.docpw);if(!d)return;const v=prompt("รหัสเปิดไฟล์ "+d.name+" (เว้นว่าง = ลบรหัส)",d.pw||"");if(v===null)return;
@@ -889,6 +900,18 @@ document.addEventListener("click",async e=>{const t=e.target.closest("button");i
   if(t.id==="docoff"){const msg=document.getElementById("docmsg");const D=DOCS||[];let n=0;try{await loadLib(PDFJS+"pdf.min.js","pdfjsLib");await fetch(PDFJS+"pdf.worker.min.js",{mode:"no-cors"})}catch(_){}for(const d of D){msg.textContent=`กำลังเก็บ ${++n}/${D.length}…`;try{await docFetch(d)}catch(_){}}msg.textContent=`✓ เก็บไว้ดูออฟไลน์แล้ว ${D.length} ไฟล์ (เปิดได้แม้ไม่มีเน็ต ในเครื่อง/เบราว์เซอร์นี้)`;renderDocs(false);return}
 });
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){const m=document.getElementById("docv");if(m)m.remove()}});
+const docsOpen=()=>{const v=document.getElementById("v-docs");return v&&!v.hidden&&!!docKey()};
+let dragN=0;
+document.addEventListener("dragenter",e=>{if(!docsOpen()||!e.dataTransfer||![...e.dataTransfer.types].includes("Files"))return;e.preventDefault();dragN++;document.body.classList.add("dragdoc")});
+document.addEventListener("dragover",e=>{if(!docsOpen()||!e.dataTransfer||![...e.dataTransfer.types].includes("Files"))return;e.preventDefault();e.dataTransfer.dropEffect="copy"});
+document.addEventListener("dragleave",e=>{if(!docsOpen())return;dragN=Math.max(0,dragN-1);if(!dragN)document.body.classList.remove("dragdoc")});
+document.addEventListener("drop",e=>{if(!docsOpen()||!e.dataTransfer)return;e.preventDefault();dragN=0;document.body.classList.remove("dragdoc");
+  const fs=[...e.dataTransfer.files].filter(f=>/pdf|^image\//.test(f.type)||/\.(pdf|jpe?g|png|heic|webp)$/i.test(f.name));
+  if(fs.length)docUpload(fs);else if(e.dataTransfer.files.length)document.getElementById("docmsg").textContent="รองรับเฉพาะไฟล์ PDF และรูป"});
+document.addEventListener("paste",e=>{if(!docsOpen())return;const t=e.target;if(t&&/^(INPUT|TEXTAREA)$/.test(t.tagName)&&!(e.clipboardData&&e.clipboardData.files.length))return;
+  const fs=[...((e.clipboardData&&e.clipboardData.files)||[])].filter(f=>/pdf|^image\//.test(f.type));if(!fs.length)return;e.preventDefault();
+  const stamp=new Date().toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}).replace(/[/:]/g,"-");
+  docUpload(fs.map((f,i)=>(f.name&&f.name!=="image.png")?f:new File([f],"รูปที่วาง "+stamp+(fs.length>1?" ("+(i+1)+")":"")+"."+((f.type.split("/")[1]||"png").replace("jpeg","jpg")),{type:f.type})))});
 /* theme */
 function setTheme(m){const r=document.documentElement;if(m==="auto")r.removeAttribute("data-theme");else r.setAttribute("data-theme",m);try{if(m==="auto")localStorage.removeItem("hk-theme");else localStorage.setItem("hk-theme",m)}catch(e){}
   const b=document.getElementById("thm");if(b){b.textContent={auto:"🌓",light:"☀️",dark:"🌙"}[m];b.title=b.ariaLabel={auto:"ธีมอัตโนมัติตามเครื่อง (แตะเพื่อเปลี่ยนเป็นกลางวัน)",light:"ธีมกลางวัน (แตะเพื่อเปลี่ยนเป็นกลางคืน)",dark:"ธีมกลางคืน (แตะเพื่อกลับเป็นอัตโนมัติ)"}[m]}
